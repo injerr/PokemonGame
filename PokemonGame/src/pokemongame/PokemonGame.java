@@ -33,6 +33,8 @@ public class PokemonGame {
             Scanner sc = new Scanner(System.in);
             String nickname,password,pokename;
             int id;
+            mostrarLogo();
+            validarUsuario();
             do {
                 mn.displayMenu();
                 ch = sc.nextInt();
@@ -145,6 +147,27 @@ public class PokemonGame {
     	Scanner sc = new Scanner(System.in);
     	System.out.println(msg);
     	return sc.nextLine();
+    }
+    
+    private void mostrarLogo(){
+        System.out.println("                                  ,'\\");
+        System.out.println("    _.----.        ____         ,'  _\\   ___    ___     ____");
+        System.out.println("_,-'       `.     |    |  /`.   \\,-'    |   \\  /   |   |    \\  |`.");
+        System.out.println("\\      __    \\    '-.  | /   `.  ___    |    \\/    |   '-.   \\ |  |");
+        System.out.println(" \\.    \\ \\   |  __  |  |/    ,','_  `.  |          | __  |    \\|  |");
+        System.out.println("   \\    \\/   /,' _`.|      ,' / / / /   |          ,' _`.|     |  |");
+        System.out.println("    \\     ,-'/  /   \\    ,'   | \\/ / ,`.|         /  /   \\  |     |");
+        System.out.println("     \\    \\ |   \\_/  |   `-.  \\    `'  /|  |    ||   \\_/  | |\\    |");
+        System.out.println("      \\    \\ \\      /       `-.`.___,-' |  |\\  /| \\      /  | |   |");
+        System.out.println("       \\    \\ `.__,'|  |`-._    `|      |__| \\/ |  `.__,'|  | |   |");
+        System.out.println("        \\_.-'       |__|    `-._ |              '-.|     '-.| |   |");
+        System.out.println("                                `'                            '-._|");
+    }
+
+    private void validarUsuario() {
+        //TODO
+        String usuario = pedirString("Indica tu nombre de usuario");
+        String password = pedirString("Indica tu contraseña");
     }
     
 }
