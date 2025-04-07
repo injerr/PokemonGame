@@ -29,12 +29,17 @@ public class PokemonGame {
             SQLConnect.loadDriver();
             Menu mn = crearMenu();
             TrainerDAO entrenadores = new TrainerDAO();
+            PokemonDAO pokemons = new PokemonDAO();
+            CapturasDAO capturas = new CapturasDAO();
             int ch;
             Scanner sc = new Scanner(System.in);
             String nickname,password,pokename;
+            Pokemon poke;
             int id;
             mostrarLogo();
-            validarUsuario();
+            Trainer thisTrainer = iniciarSesion(0);
+            System.out.println("Bienvenido " + thisTrainer.getNickname());
+            System.out.println();
             do {
                 mn.displayMenu();
                 ch = sc.nextInt();
@@ -97,21 +102,67 @@ public class PokemonGame {
                     case 5:
                         System.out.println("Dar de alta pokemon");
                         System.out.println("---------------------------");
+                        pokename = pedirString("Nombre del nuevo pokemon:");
+                        System.out.println("Cual es su numº de la pokedex?");
+                        id = sc.nextInt();
+                        poke = new Pokemon(id, pokename);
+                        try {
+                            pokemons.darAltaPokemon(poke);
+                        } catch (pokemonExistente ex) {
+                            System.out.println(ex.getMessage());
+                        }
                         break;
+
 
                     case 6:
                         System.out.println("Cazar pokemon");
                         System.out.println("---------------------");
+                        poke = pokemons.getPokemonRandom();
+                        final int CP_MAX_VALUE = 100; 
+                        int cp = poke.getRandomCP(CP_MAX_VALUE);
+                        System.out.println("Te has encontrado un " + poke.getName() + " salvaje.");
+                        System.out.println(poke.getName() + " Salvaje tiene " + cp +" de cp (Combat Points).");
+                        try {
+                            System.out.println("Adivina el numero (pista, el numero esta entre 1 y "+ cp +")");
+                            int response = sc.nextInt();
+                            if (capturas.darCaptura(thisTrainer.getId(), poke.getId_pokedex(), cp, response, 0)) {
+                                System.out.println("Has capturado a: " + poke.getName());
+                            }
+                        } catch (segundaOportunidadEnCaza e) {
+                            System.out.println("Última oportunidad");
+                            System.out.println("Adivina el numero (pista, el numero esta entre 1 y " + cp + ")");
+                            int response = sc.nextInt();
+                            try {
+                                if (capturas.darCaptura(thisTrainer.getId(), poke.getId_pokedex(), cp, response, 1)) {
+                                    System.out.println("Has capturado a: " + poke.getName());
+                                }else{
+                                    throw new segundaOportunidadEnCaza("");
+                                }
+                            } catch (segundaOportunidadEnCaza ex) {
+                                System.out.println("El pokemon huyó");
+                            }
+                        } 
                         break;
 
                     case 7:
                         System.out.println("Listar pokemons cazados");
                         System.out.println("----------------------------------");
+                        List<String> mypokemons = capturas.getCaza(thisTrainer.getId());
+                        for (String mypokemon : mypokemons) {
+                            System.out.println(mypokemon);
+                        }
+                        System.out.println("Tienes "+ mypokemons.size() +" pokemons.");
+                        System.out.println();
                         break;
 
                     case 8:
                         System.out.println("Listar tipos pokemon existentes en juego");
                         System.out.println("-----------------------------------------------------");
+                        List<Pokemon> pokedex = pokemons.devolverPokemons();
+                        for (Pokemon pokemon : pokedex) {
+                            System.out.println(pokemon.getId_pokedex() + " " +pokemon.getName());
+                        }
+                        System.out.println("");
                         break;
 
                     default:
@@ -123,11 +174,13 @@ public class PokemonGame {
             
         } catch (ClassNotFoundException | SQLException ex) {
             System.out.println(ex.getMessage());
+        } catch (errorInLogin ex) {
+            System.out.println(ex.getMessage());
         }
     }
     
     private Menu crearMenu() {
-        Menu mn = new Menu("TikTok",true);
+        Menu mn = new Menu("Pokemon Go",true);
         try {
                     mn.addOption("Dar de alta entrenador");
                     mn.addOption("Dar de baja entrenador");
@@ -164,10 +217,28 @@ public class PokemonGame {
         System.out.println("                                `'                            '-._|");
     }
 
-    private void validarUsuario() {
-        //TODO
+    private Trainer iniciarSesion(int c) throws SQLException, errorInLogin{
+        if (c >= 3) {
+            throw new errorInLogin("Has intentado entrar erroneamente muchas veces.");
+        }
+        Trainer devolver = null;
+        TrainerDAO t = new TrainerDAO();
         String usuario = pedirString("Indica tu nombre de usuario");
         String password = pedirString("Indica tu contraseña");
+        Trainer entrenador = t.validarEntrenador(usuario, password);
+        if (entrenador == null) {
+            try {
+                devolver = new Trainer(usuario, password);
+                t.darAltaUsuario(devolver);
+                System.out.println("Se ha creado tu usuario.");
+            } catch (userExistente e) {
+                System.out.println("Intentalo de nuevo.");
+                iniciarSesion(++c);
+            }
+        } else{
+            devolver = entrenador;
+        }
+        return devolver;
     }
     
 }

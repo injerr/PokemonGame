@@ -117,4 +117,24 @@ public class TrainerDAO {
             throw e;
         }
     }
+    
+    public Trainer validarEntrenador(String trainername,String password) throws SQLException {
+        try (Connection conn = SQLConnect.getConnection()) {
+            Trainer entrenador = null;
+            Statement stmt = conn.createStatement();
+            String query = "SELECT * FROM TRAINER WHERE nickname = '"+ trainername +"' AND password = '"+ password +"';";
+            ResultSet res = stmt.executeQuery(query);
+            if (res.next()) {
+                int id = res.getInt("id");
+                String name = res.getString("nickname");
+                password = res.getString("password");
+                entrenador = new Trainer(name, id, password);
+            }
+            
+            return entrenador;
+
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
 }
